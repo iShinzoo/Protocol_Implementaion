@@ -14,6 +14,7 @@
     "hardhat": "^2.24.1"
   },
   "dependencies": {
-    "@layerzerolabs/oapp-evm": "^0.3.2"
+    "@layerzerolabs/oapp-evm": "^0.3.2",
+    "dotenv": "^16.5.0"
   }
 }

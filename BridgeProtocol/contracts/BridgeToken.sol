@@ -18,4 +18,14 @@ contract BridgedToken is ERC20, AccessControl {
     function burn(address from, uint256 amount) external onlyRole(BRIDGE_ROLE) {
         _burn(from, amount);
     }
+
+    // Function to grant bridge role to an address
+    function grantBridgeRole(address bridge) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        _grantRole(BRIDGE_ROLE, bridge);
+    }
+
+    // Function to revoke bridge role from an address
+    function revokeBridgeRole(address bridge) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        _revokeRole(BRIDGE_ROLE, bridge);
+    }
 }

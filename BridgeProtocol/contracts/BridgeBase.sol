@@ -8,6 +8,8 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 abstract contract BridgeBase is ReentrancyGuard, Pausable, Ownable {
     mapping(bytes32 => bool) public processedMessages;
 
+    constructor(address initialOwner) Ownable(initialOwner) {}
+
     modifier onlyValidAddress(address to) {
         require(to != address(0), "Invalid address");
         _;
