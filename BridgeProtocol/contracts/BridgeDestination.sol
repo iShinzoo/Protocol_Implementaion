@@ -22,11 +22,9 @@ contract BridgeDestination is BridgeBase, ILayerZeroReceiver {
 
     event BridgeReceived(address indexed receiver, uint256 amount);
 
-    constructor(
-        address _token, 
-        address _trustedSourceBridge,
-        address initialOwner
-    ) BridgeBase(initialOwner) {
+    constructor(address _token, address _trustedSourceBridge, address _owner)
+        BridgeBase(_owner)
+    {
         token = _token;
         trustedSourceBridge = _trustedSourceBridge;
     }
@@ -34,7 +32,7 @@ contract BridgeDestination is BridgeBase, ILayerZeroReceiver {
     function lzReceive(
         uint16, /* _srcChainId */
         bytes calldata _srcAddress,
-        uint64 /* _nonce */,
+        uint64 _nonce,
         bytes calldata _payload
     ) external override nonReentrant whenNotPaused {
         require(keccak256(_srcAddress) == keccak256(abi.encodePacked(trustedSourceBridge)), "Invalid source bridge");
@@ -47,11 +45,5 @@ contract BridgeDestination is BridgeBase, ILayerZeroReceiver {
 
         IERC20Mint(token).mint(to, amount);
         emit BridgeReceived(to, amount);
-    }
-
-    // Function to update trusted source bridge (only owner)
-    function updateTrustedSourceBridge(address _newTrustedSourceBridge) external onlyOwner {
-        require(_newTrustedSourceBridge != address(0), "Invalid address");
-        trustedSourceBridge = _newTrustedSourceBridge;
     }
 }
