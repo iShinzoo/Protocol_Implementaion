@@ -34,6 +34,7 @@ contract BridgeSource is BridgeBase {
     
     // Mapping to store trusted remote addresses for each chain
     mapping(uint16 => bytes) public trustedRemoteLookup;
+    uint256 public destinationGasAmount = 250000; // Default gas amount, can be updated by owner
     
     event BridgeInitiated(address indexed sender, address indexed to, uint256 amount, uint16 dstChainId);
     event SetTrustedRemote(uint16 _remoteChainId, bytes _path);
@@ -56,9 +57,14 @@ contract BridgeSource is BridgeBase {
         emit SetTrustedRemote(_remoteChainId, _path);
     }
 
+    function setDestinationGasAmount(uint256 _gasAmount) external onlyOwner {
+        require(_gasAmount > 0, "Gas amount must be greater than 0");
+        destinationGasAmount = _gasAmount;
+    }
+
     function bridgeTokens(
         uint16 dstChainId,
-        bytes calldata destinationAddress, // This should be the user's destination address
+        address destinationAddress, // This should be the user's destination address
         uint256 amount
     ) external payable nonReentrant whenNotPaused {
         require(amount > 0, "Amount must be > 0");
@@ -80,7 +86,7 @@ contract BridgeSource is BridgeBase {
             payload,
             payable(msg.sender),
             address(0x0),
-            bytes("")
+            abi.encodePacked(uint16(1), destinationGasAmount) // Version 1, custom gas
         );
 
         emit BridgeInitiated(msg.sender, address(0), amount, dstChainId);
@@ -89,11 +95,14 @@ contract BridgeSource is BridgeBase {
     // Function to estimate LayerZero fees
     function estimateFees(
         uint16 dstChainId,
-        bytes calldata destinationAddress,
+        address destinationAddress,
         uint256 amount
     ) external view returns (uint256 nativeFee, uint256 zroFee) {
         bytes memory payload = abi.encode(destinationAddress, amount);
-        return endpoint.estimateFees(dstChainId, address(this), payload, false, bytes(""));
+        // When estimating fees, you might want to use the configured gas amount or a generic one
+        // Using the configured one for consistency, though LayerZero might override/ignore for pure fee estimation
+        bytes memory adapterParams = abi.encodePacked(uint16(1), destinationGasAmount);
+        return endpoint.estimateFees(dstChainId, address(this), payload, false, adapterParams);
     }
 
     // Function to withdraw stuck tokens (only owner)
@@ -104,4 +113,12 @@ contract BridgeSource is BridgeBase {
             IERC20(_token).transfer(owner(), amount);
         }
     }
+
+    // Function to withdraw stuck ETH (only owner)
+    function withdrawETH() external onlyOwner {
+        payable(owner()).transfer(address(this).balance);
+    }
+
+    // Allow contract to receive ETH
+    receive() external payable {}
 }

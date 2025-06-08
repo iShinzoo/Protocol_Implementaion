@@ -7,7 +7,7 @@ interface ILayerZeroReceiver {
     function lzReceive(
         uint16 _srcChainId,
         bytes calldata _srcAddress,
-        uint64 _nonce,
+        uint64, /* _nonce */
         bytes calldata _payload
     ) external;
 }
@@ -32,7 +32,7 @@ contract BridgeDestination is BridgeBase, ILayerZeroReceiver {
     function lzReceive(
         uint16, /* _srcChainId */
         bytes calldata _srcAddress,
-        uint64 _nonce,
+        uint64 /* _nonce */,
         bytes calldata _payload
     ) external override nonReentrant whenNotPaused {
         require(keccak256(_srcAddress) == keccak256(abi.encodePacked(trustedSourceBridge)), "Invalid source bridge");
