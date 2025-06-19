@@ -103,8 +103,7 @@ contract BridgeSource is BridgeBase {
         // Using the configured one for consistency, though LayerZero might override/ignore for pure fee estimation
         bytes memory adapterParams = abi.encodePacked(uint16(1), destinationGasAmount);
         return endpoint.estimateFees(dstChainId, address(this), payload, false, adapterParams);
-    }
-
+    
     // Function to withdraw stuck tokens (only owner)
     function withdrawTokens(address _token, uint256 amount) external onlyOwner {
         if (_token == address(0)) {
